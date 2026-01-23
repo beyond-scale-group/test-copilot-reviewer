@@ -1,0 +1,32 @@
+name: Test Copilot Reviewer
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_case:
+        description: 'Test case ID (e.g., CR-001)'
+        required: true
+        type: string
+  pull_request:
+    branches: [main]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Copilot Reviewer
+        id: review
+        uses: beyond-scale-group/bsg-claude-plugins/github-actions/copilot-reviewer@main
+        with:
+          config-pattern: 'copilot-*.json'
+          threshold: 0.7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          
+      - name: Check result
+        run: |
+          echo "Coverage: ${{ steps.review.outputs.coverage }}"
+          echo "Status: ${{ steps.review.outputs.status }}"
